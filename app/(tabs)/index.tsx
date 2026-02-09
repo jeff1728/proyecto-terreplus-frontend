@@ -1,98 +1,214 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+import { MapModal } from '@/src/views/modals/map.modal';
+import React, { useState } from 'react';
+import { ScrollView, StyleSheet, View } from 'react-native';
+import { Avatar, Button, Card, Checkbox, Text, TextInput, useTheme } from 'react-native-paper';
+// Material Community Icons names for reference:
+// map-marker, arrow-down-drop-circle, grid, water, chart-line
 
-import { HelloWave } from '@/components/hello-wave';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Link } from 'expo-router';
+import { useAuth } from '@/src/providers/AuthProvider';
 
-export default function HomeScreen() {
+export default function EstimationScreen() {
+  const theme = useTheme();
+  const { signOut, user } = useAuth();
+
+  // State for inputs
+  const [location, setLocation] = useState('');
+  const [landType, setLandType] = useState('');
+  const [landSize, setLandSize] = useState('');
+  const [soilCondition, setSoilCondition] = useState('');
+  const [waterAccess, setWaterAccess] = useState(false);
+  const [infrastructure, setInfrastructure] = useState('');
+
+  // Dropdown visibility simulation (Material Menu would be better, but simple toggle for now)
+  const [showTypeMenu, setShowTypeMenu] = useState(false);
+  const [showSoilMenu, setShowSoilMenu] = useState(false);
+
+  const [showMapModal, setShowMapModal] = useState(false);
+
+  const handleSelectLocation = (coords: { latitude: number; longitude: number }) => {
+    setLocation(`Lat: ${coords.latitude.toFixed(4)}, Lng: ${coords.longitude.toFixed(4)}`);
+  };
+
+  // Result state
+  const [estimatedPrice, setEstimatedPrice] = useState<string | null>(null);
+
+  const handleEstimate = () => {
+    // Simulate estimation logic
+    setEstimatedPrice('$47,500');
+  };
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <Link href="/modal">
-          <Link.Trigger>
-            <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-          </Link.Trigger>
-          <Link.Preview />
-          <Link.Menu>
-            <Link.MenuAction title="Action" icon="cube" onPress={() => alert('Action pressed')} />
-            <Link.MenuAction
-              title="Share"
-              icon="square.and.arrow.up"
-              onPress={() => alert('Share pressed')}
-            />
-            <Link.Menu title="More" icon="ellipsis">
-              <Link.MenuAction
-                title="Delete"
-                icon="trash"
-                destructive
-                onPress={() => alert('Delete pressed')}
-              />
-            </Link.Menu>
-          </Link.Menu>
-        </Link>
+    <ScrollView contentContainerStyle={[styles.container, { backgroundColor: theme.colors.background }]}>
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+        <View>
+          <Text variant="headlineMedium" style={[styles.title, { color: theme.colors.primary, marginBottom: 0 }]}>
+            Estimar precio
+          </Text>
+          {user && <Text variant="bodySmall">Hola, {user.name}</Text>}
+        </View>
+        {/* <Button mode="outlined" onPress={() => signOut()} compact>
+          Salir
+        </Button> */}
+      </View>
 
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+      <View style={styles.form}>
+        <TextInput
+          label="Ubicación del terreno"
+          placeholder="Seleccionar en mapa"
+          value={location}
+          // specific change: make it essentially read-only or just clickable
+          // For UX, sticking to icon click or full click
+          mode="outlined"
+          left={<TextInput.Icon icon="map-marker" onPress={() => setShowMapModal(true)} forceTextInputFocus={false} />}
+          right={<TextInput.Icon icon="crosshairs-gps" onPress={() => setShowMapModal(true)} forceTextInputFocus={false} />}
+          style={styles.input}
+          editable={false} // Prevent manual entry to force map use
+          onPressIn={() => setShowMapModal(true)}
+        />
+
+        <MapModal
+          visible={showMapModal}
+          onDismiss={() => setShowMapModal(false)}
+          onSelectLocation={handleSelectLocation}
+        />
+
+        {/* Placeholder for Dropdown - simulated with TextInput for visual fidelity to request if full Menu not implemented */}
+        <TextInput
+          label="Tipo de terreno"
+          placeholder="Tipo de terreno"
+          value={landType}
+          onChangeText={setLandType}
+          mode="outlined"
+          right={<TextInput.Icon icon="chevron-down" />}
+          style={styles.input}
+        />
+
+        <TextInput
+          label="Tamaño del terreno"
+          placeholder="Tamaño del terreno"
+          value={landSize}
+          onChangeText={setLandSize}
+          keyboardType="numeric"
+          mode="outlined"
+          left={<TextInput.Icon icon="grid" />}
+          style={styles.input}
+        />
+
+        <TextInput
+          label="Condiciones del suelo"
+          placeholder="Condiciones del suelo"
+          value={soilCondition}
+          onChangeText={setSoilCondition}
+          mode="outlined"
+          right={<TextInput.Icon icon="chevron-down" />}
+          style={styles.input}
+        />
+
+        <View style={styles.checkboxContainer}>
+          <Checkbox
+            status={waterAccess ? 'checked' : 'unchecked'}
+            onPress={() => setWaterAccess(!waterAccess)}
+            color={theme.colors.primary}
+          />
+          <Text onPress={() => setWaterAccess(!waterAccess)}>Acceso a agua o riego</Text>
+        </View>
+
+        <TextInput
+          label="Infraestructura cercana"
+          placeholder="Infraestructura cercana"
+          value={infrastructure}
+          onChangeText={setInfrastructure}
+          mode="outlined"
+          style={styles.input}
+        />
+
+        <Button
+          mode="contained"
+          onPress={handleEstimate}
+          style={[styles.button, { backgroundColor: '#4CAF50' }]} // Soft green as requested
+          labelStyle={styles.buttonLabel}
+          icon="chart-line-variant"
+          contentStyle={styles.buttonContent}
+        >
+          Estimar Valor
+        </Button>
+      </View>
+
+      {estimatedPrice && (
+        <Card style={styles.card}>
+          <Card.Content style={styles.cardContent}>
+            <View style={{ flex: 1 }}>
+              <Text variant="titleMedium" style={styles.cardTitle}>Precio Estimado</Text>
+              <Text variant="displayMedium" style={[styles.priceValue, { color: theme.colors.primary }]}>
+                {estimatedPrice}
+              </Text>
+              <Text variant="bodySmall" style={styles.cardDescription}>
+                Nuestro modelo de IA utiliza datos geoespaciales y agrícolas para estimar precios precisos de terrenos rurales
+              </Text>
+            </View>
+            <Avatar.Icon size={48} icon="chart-bar" style={{ backgroundColor: '#E8F5E9' }} color="#4CAF50" />
+          </Card.Content>
+        </Card>
+      )}
+
+      {/* Forced spacer for bottom tabs visibility if needed */}
+      <View style={{ height: 20 }} />
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
+  container: {
+    padding: 24,
+    paddingTop: 60, // Top margin
+  },
+  title: {
+    fontWeight: '600',
+    marginBottom: 24,
+  },
+  form: {
+    gap: 16,
+    marginBottom: 32,
+  },
+  input: {
+    backgroundColor: 'transparent',
+    borderRadius: 8, // Rounded border attempt (Paper handles this via theme usually, but can override)
+  },
+  checkboxContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
+  button: {
+    borderRadius: 8,
+    marginTop: 8,
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
+  buttonContent: {
+    height: 56, // Prominent height
+  },
+  buttonLabel: {
+    fontSize: 18,
+    color: '#FFFFFF',
+  },
+  card: {
+    borderRadius: 12,
+    elevation: 2,
+    backgroundColor: 'white',
+  },
+  cardContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  cardTitle: {
+    color: '#757575',
+  },
+  priceValue: {
+    fontWeight: 'bold',
+    marginVertical: 4,
+  },
+  cardDescription: {
+    color: '#9E9E9E',
+    marginTop: 4,
+    marginRight: 8,
   },
 });
