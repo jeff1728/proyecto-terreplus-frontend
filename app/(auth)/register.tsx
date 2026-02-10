@@ -1,6 +1,6 @@
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { ScrollView, StyleSheet, View, TouchableOpacity } from 'react-native';
 import { Button, SegmentedButtons, Text, TextInput, useTheme } from 'react-native-paper';
 import { authService } from '../../src/services/authService';
 
@@ -116,13 +116,14 @@ export default function RegisterScreen() {
                     Registrarse
                 </Button>
 
-                <Button
-                    mode="text"
-                    onPress={() => router.back()}
-                    style={styles.linkButton}
-                >
-                    ¿Ya tienes cuenta? Inicia Sesión
-                </Button>
+                <View style={styles.footerLinks}>
+                    <Text variant="bodyMedium">¿Ya tienes cuenta?</Text>
+                    <TouchableOpacity onPress={() => router.back()}>
+                        <Text variant="bodyMedium" style={{ color: theme.colors.primary, fontWeight: 'bold', marginLeft: 4 }}>
+                            Inicia Sesión
+                        </Text>
+                    </TouchableOpacity>
+                </View>
             </View>
         </ScrollView>
     );
@@ -150,7 +151,10 @@ const styles = StyleSheet.create({
     buttonContent: {
         paddingVertical: 6,
     },
-    linkButton: {
-        marginTop: 8,
+    footerLinks: {
+        flexDirection: 'row',
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginTop: 16,
     },
 });

@@ -1,6 +1,6 @@
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, View, TouchableOpacity } from 'react-native';
 import { Button, Text, TextInput, useTheme } from 'react-native-paper';
 import { authService } from '../../src/services/authService';
 
@@ -77,13 +77,14 @@ export default function LoginScreen() {
                     Iniciar Sesión
                 </Button>
 
-                <Button
-                    mode="text"
-                    onPress={handleRegisterNavigation}
-                    style={styles.linkButton}
-                >
-                    ¿No tienes cuenta? Regístrate
-                </Button>
+                <View style={styles.footerLinks}>
+                    <Text variant="bodyMedium">¿No tienes cuenta?</Text>
+                    <TouchableOpacity onPress={handleRegisterNavigation}>
+                        <Text variant="bodyMedium" style={{ color: theme.colors.primary, fontWeight: 'bold', marginLeft: 4 }}>
+                            Regístrate
+                        </Text>
+                    </TouchableOpacity>
+                </View>
             </View>
 
             <View style={styles.footer}>
@@ -124,8 +125,11 @@ const styles = StyleSheet.create({
     input: {
         backgroundColor: 'transparent',
     },
-    linkButton: {
-        marginTop: 8,
+    footerLinks: {
+        flexDirection: 'row',
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginTop: 16,
     },
     footer: {
         marginTop: 40,
