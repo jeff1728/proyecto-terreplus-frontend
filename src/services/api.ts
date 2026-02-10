@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // Use environment variable or localhost for dev.
 // Android emulator uses 10.0.2.2 for localhost
-const API_URL = process.env.EXPO_PUBLIC_API_URL || 'http://10.41.1.211:3000/api';
+const API_URL = process.env.EXPO_PUBLIC_API_URL || 'http://192.168.10.142:3000/api';
 
 const api = axios.create({
     baseURL: API_URL,

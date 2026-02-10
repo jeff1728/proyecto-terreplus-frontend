@@ -1,13 +1,13 @@
 import * as Location from 'expo-location';
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
-import MapView, { Region } from 'react-native-maps';
+import MapView, { Region, Polygon, Marker } from 'react-native-maps';
 import { Button, Modal, Portal, Text, useTheme } from 'react-native-paper';
 
 interface MapModalProps {
     visible: boolean;
     onDismiss: () => void;
-    onSelectLocation: (location: { latitude: number; longitude: number }) => void;
+    onSelectLocation: (location: { latitude: number; longitude: number }, polygon: { latitude: number; longitude: number }[]) => void;
 }
 
 export const MapModal = ({ visible, onDismiss, onSelectLocation }: MapModalProps) => {
@@ -19,6 +19,7 @@ export const MapModal = ({ visible, onDismiss, onSelectLocation }: MapModalProps
         longitudeDelta: 0.0421,
     });
     const [permissionGranted, setPermissionGranted] = useState(false);
+    const [polygonPoints, setPolygonPoints] = useState<{ latitude: number; longitude: number }[]>([]);
 
     useEffect(() => {
         (async () => {
@@ -44,11 +45,35 @@ export const MapModal = ({ visible, onDismiss, onSelectLocation }: MapModalProps
         setRegion(newRegion);
     };
 
+    const handleMapPress = (e: any) => {
+        const { coordinate } = e.nativeEvent;
+        setPolygonPoints([...polygonPoints, coordinate]);
+    };
+
+    const handleUndo = () => {
+        setPolygonPoints(polygonPoints.slice(0, -1));
+    };
+
+    const handleClear = () => {
+        setPolygonPoints([]);
+    };
+
     const handleConfirm = () => {
-        onSelectLocation({
-            latitude: region.latitude,
-            longitude: region.longitude,
-        });
+        // If we have a polygon, calculate centroid or use the current center?
+        // Better to use the centroid of the polygon if it exists, otherwise the map center.
+
+        let center = { latitude: region.latitude, longitude: region.longitude };
+
+        if (polygonPoints.length > 0) {
+            const latSum = polygonPoints.reduce((sum, p) => sum + p.latitude, 0);
+            const lngSum = polygonPoints.reduce((sum, p) => sum + p.longitude, 0);
+            center = {
+                latitude: latSum / polygonPoints.length,
+                longitude: lngSum / polygonPoints.length
+            };
+        }
+
+        onSelectLocation(center, polygonPoints);
         onDismiss();
     };
 
@@ -56,7 +81,9 @@ export const MapModal = ({ visible, onDismiss, onSelectLocation }: MapModalProps
         <Portal>
             <Modal visible={visible} onDismiss={onDismiss} contentContainerStyle={styles.modalContent}>
                 <View style={styles.container}>
-                    <Text variant="titleMedium" style={styles.title}>Selecciona la Ubicación</Text>
+                    <Text variant="titleMedium" style={styles.title}>
+                        {polygonPoints.length < 3 ? "Toca el mapa para dibujar el polígono (min 3 ptos)" : "Polígono listo"}
+                    </Text>
 
                     <View style={styles.mapContainer}>
                         <MapView
@@ -65,20 +92,57 @@ export const MapModal = ({ visible, onDismiss, onSelectLocation }: MapModalProps
                             onRegionChangeComplete={handleRegionChange}
                             showsUserLocation={permissionGranted}
                             showsMyLocationButton={permissionGranted}
+                            onPress={handleMapPress}
                         >
-                            {/* Marker fixed at center */}
+                            {/* Marker for points */}
+                            {polygonPoints.map((point, index) => (
+                                <Marker
+                                    key={index}
+                                    coordinate={point}
+                                    anchor={{ x: 0.5, y: 0.5 }}
+                                >
+                                    <View style={[styles.dot, { backgroundColor: theme.colors.primary }]} />
+                                </Marker>
+                            ))}
+
+                            {/* Polygon */}
+                            {polygonPoints.length > 0 && (
+                                <Polygon
+                                    coordinates={polygonPoints}
+                                    strokeColor={theme.colors.primary}
+                                    fillColor={theme.colors.primary + '40'} // Transparent fill
+                                    strokeWidth={2}
+                                />
+                            )}
                         </MapView>
-                        {/* Overlay Marker to indicate center */}
-                        <View style={styles.markerFixed}>
-                            <View style={[styles.marker, { backgroundColor: theme.colors.primary }]} />
-                        </View>
+
+                        {/* Overlay Marker center if no points to indicate "just center selection" if desired, 
+                            but here we enforce polygon or center logic. 
+                            Let's show it only if empty. */}
+                        {polygonPoints.length === 0 && (
+                            <View style={styles.markerFixed}>
+                                <View style={[styles.marker, { backgroundColor: theme.colors.secondary }]} />
+                            </View>
+                        )}
+                    </View>
+
+                    <View style={styles.controls}>
+                        <Text variant="bodySmall">Puntos: {polygonPoints.length}</Text>
+                        <Button mode="text" onPress={handleUndo} disabled={polygonPoints.length === 0}>Deshacer</Button>
+                        <Button mode="text" onPress={handleClear} disabled={polygonPoints.length === 0}>Limpiar</Button>
                     </View>
 
                     <View style={styles.footer}>
                         <Button mode="text" onPress={onDismiss} style={styles.button}>
                             Cancelar
                         </Button>
-                        <Button mode="contained" onPress={handleConfirm} style={styles.button}>
+                        <Button
+                            mode="contained"
+                            onPress={handleConfirm}
+                            style={styles.button}
+                            // valid if just a point (center) OR a valid polygon (3+ points)
+                            disabled={polygonPoints.length > 0 && polygonPoints.length < 3}
+                        >
                             Confirmar
                         </Button>
                     </View>
@@ -93,7 +157,7 @@ const styles = StyleSheet.create({
         backgroundColor: 'white',
         margin: 20,
         borderRadius: 12,
-        height: '80%',
+        height: '85%',
         overflow: 'hidden',
     },
     container: {
@@ -101,7 +165,7 @@ const styles = StyleSheet.create({
     },
     title: {
         textAlign: 'center',
-        padding: 16,
+        padding: 12,
         fontWeight: 'bold',
     },
     mapContainer: {
@@ -125,11 +189,28 @@ const styles = StyleSheet.create({
         borderWidth: 2,
         borderColor: 'white',
     },
+    dot: {
+        height: 12,
+        width: 12,
+        borderRadius: 6,
+        borderWidth: 1,
+        borderColor: 'white',
+    },
+    controls: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        paddingHorizontal: 16,
+        paddingVertical: 8,
+        backgroundColor: '#f5f5f5'
+    },
     footer: {
         flexDirection: 'row',
         justifyContent: 'flex-end',
         padding: 16,
         gap: 8,
+        borderTopWidth: 1,
+        borderTopColor: '#e0e0e0'
     },
     button: {
         minWidth: 100,
