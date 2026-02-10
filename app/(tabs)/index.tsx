@@ -2,6 +2,7 @@ import { MapModal } from '@/src/views/modals/map.modal';
 import React, { useState, useEffect } from 'react';
 import { ScrollView, StyleSheet, View, Alert, TouchableOpacity } from 'react-native';
 import { Avatar, Button, Card, Checkbox, Text, TextInput, useTheme, HelperText, Modal as PaperModal, Portal, List, Divider } from 'react-native-paper';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { createTerrain, getMyTerrains } from '@/src/services/terrain.service';
 import { estimateTerrainPrice } from '@/src/services/ml.service';
 // Material Community Icons names for reference:
@@ -126,11 +127,32 @@ export default function EstimationScreen() {
     return valid;
   }
 
+
+  const router = useRouter();
+  const params = useLocalSearchParams();
+
+  // Effect to handle incoming params (auto-selection from History)
+  useEffect(() => {
+    if (params.terrainId) {
+      const id = Number(params.terrainId);
+      const loadAndSelect = async () => {
+        try {
+          const terrains = await getMyTerrains();
+          setMyTerrains(terrains);
+          const selected = terrains.find((t: any) => t.id === id);
+          if (selected) {
+            handleSelectTerrain(selected);
+          }
+        } catch (e) {
+          console.error("Error auto-loading terrain params", e);
+        }
+      };
+      loadAndSelect();
+    }
+  }, [params.terrainId]);
+
   // Effect to reset registeredId if inputs change
   useEffect(() => {
-    // We could add deps for all inputs, but that might be annoyingly aggressive. 
-    // Let's just say if user types in inputs, we assume they might be changing data.
-    // Simple approach: onChangeText handlers below will call a helper that resets ID.
   }, []);
 
   const handleInputChange = (setter: any, value: any) => {
@@ -191,10 +213,6 @@ export default function EstimationScreen() {
     let targetId = registeredId;
 
     if (!targetId) {
-      // If not registered, try to register first automatically? 
-      // User asked for "manage cases". 
-      // Plan: If not registered, ask user to register or auto-register.
-      // Let's auto-register if valid, or just warn.
       // "Validar de alguna forma que el terreno ya exista" -> relying on registeredId.
 
       Alert.alert(
@@ -291,12 +309,6 @@ export default function EstimationScreen() {
           onSelectLocation={handleSelectLocation}
         />
 
-        {/* Placeholder for Dropdown - simulated with TextInput for visual fidelity to request if full Menu not implemented */}
-        {/* Skipping landType if it duplicates soilCondition or merge them? 
-            Backend expects: area_hectareas, tipo_suelo, acceso_riego, proximidad_vias_km.
-            UI had: landType (Tipo de terreno) AND soilCondition (Condiciones del suelo).
-            I will use soilCondition for 'tipo_suelo'.
-        */}
 
         <TextInput
           label="Área (Hectáreas)"
