@@ -18,12 +18,10 @@ export default function MapComponent({ terrains, region, onRegionChange }: MapCo
     useEffect(() => {
         const loadModules = async () => {
             try {
-                // Dynamically import leaflet and react-leaflet
                 const L = require('leaflet');
                 const ReactLeaflet = require('react-leaflet');
                 require('leaflet/dist/leaflet.css');
 
-                // Fix for default marker icon
                 const iconUrl = 'https://unpkg.com/leaflet@1.9.3/dist/images/marker-icon.png';
                 const iconRetinaUrl = 'https://unpkg.com/leaflet@1.9.3/dist/images/marker-icon-2x.png';
                 const shadowUrl = 'https://unpkg.com/leaflet@1.9.3/dist/images/marker-shadow.png';
@@ -67,7 +65,6 @@ export default function MapComponent({ terrains, region, onRegionChange }: MapCo
 
     const { MapContainer, TileLayer, Marker, Popup, useMap } = LeafletModules;
 
-    // Inner component to handle view changes using useMap hook
     const ChangeView = ({ center, zoom }: { center: [number, number], zoom: number }) => {
         const map = useMap();
         useEffect(() => {

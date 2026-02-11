@@ -29,19 +29,11 @@ export default function MapComponent({ terrains, region, onRegionChange }: MapCo
             {terrains.map((terrain) => {
                 let coordinates = [];
                 try {
-                    // Check if poligono is a GeoJSON object or string
                     if (typeof terrain.poligono === 'string') {
-                        /* Handle potential string parsing if needed, though usually expected as object from backend if handled right 
-                           But given the backend model: DataTypes.GEOMETRY('POLYGON', 4326)
-                           Sequelize might return it as a detailed object.
-                           We'll assume for now we might need to parse or it's in a specific format.
-                           For simplicity in this step, we will focus on the center point (coordenadas) if polygon fails or for the marker.
-                         */
+
                     }
 
-                    // If we have direct coordinates (point)
                     if (terrain.coordenadas && terrain.coordenadas.coordinates) {
-                        // GeoJSON is [lng, lat], MapView needs {latitude, longitude}
                         const [lng, lat] = terrain.coordenadas.coordinates;
                         return (
                             <Marker
