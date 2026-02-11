@@ -40,5 +40,15 @@ export const authService = {
 
     logout: async () => {
         await storage.removeToken();
+    },
+
+    getProfile: async (): Promise<User> => {
+        const response = await api.get<User>('/user/profile');
+        return response.data;
+    },
+
+    updateProfile: async (data: { nombre?: string; foto_perfil?: string; password?: string; passwordold?: string }): Promise<{ message: string; user: User }> => {
+        const response = await api.put<{ message: string; user: User }>('/user/profile', data);
+        return response.data;
     }
 };

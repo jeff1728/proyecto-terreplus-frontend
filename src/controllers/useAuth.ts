@@ -28,9 +28,9 @@ export const useAuth = () => {
     const register = async (name: string, email: string, password: string, rol: 'inversionista' | 'agricultor') => {
         setLoading(true);
         try {
-            const newUser = await authService.register({ nombre: name, email, password, rol });
-            setUser(newUser);
-            router.replace('/(tabs)');
+            await authService.register(name, email, password, rol);
+            // Registration successful, redirect to login
+            router.replace('/(auth)/login');
         } catch (error) {
             console.error(error);
             alert('Error al registrar usuario.');

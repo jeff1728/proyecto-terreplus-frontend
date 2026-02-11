@@ -47,6 +47,13 @@ export default function SupportScreen() {
                 <Divider />
                 <List.Subheader>Configuración</List.Subheader>
                 <List.Item
+                    title="Editar Perfil"
+                    description="Actualizar nombre, foto y contraseña"
+                    left={props => <List.Icon {...props} icon="account-edit" />}
+                    right={props => <List.Icon {...props} icon="chevron-right" />}
+                    onPress={() => router.push('/profile/edit')}
+                />
+                <List.Item
                     title="Apariencia"
                     description="Tema Claro / Oscuro"
                     left={props => <List.Icon {...props} icon="theme-light-dark" />}

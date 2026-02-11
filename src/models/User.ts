@@ -4,4 +4,5 @@ export interface User {
     email: string;
     rol: 'inversionista' | 'agricultor' | 'admin';
     token?: string;
+    foto_perfil?: string;
 }
