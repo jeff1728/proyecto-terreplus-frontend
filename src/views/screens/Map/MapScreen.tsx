@@ -1,15 +1,15 @@
-import React, { useState, useCallback } from "react";
-import { View, StyleSheet, Platform, Keyboard } from "react-native";
+import React, { useCallback, useState } from "react";
+import { Keyboard, Platform, StyleSheet, View } from "react-native";
 
-import {
-  Text,
-  useTheme,
-  Searchbar,
-  ActivityIndicator,
-  FAB,
-} from "react-native-paper";
-import { useFocusEffect } from "expo-router";
 import { getMyTerrains } from "@/src/services/terrain.service";
+import { useFocusEffect } from "expo-router";
+import {
+    ActivityIndicator,
+    FAB,
+    Searchbar,
+    Text,
+    useTheme,
+} from "react-native-paper";
 import MapComponent from "./MapComponent";
 
 export default function MapScreen() {
@@ -17,11 +17,9 @@ export default function MapScreen() {
   const [terrains, setTerrains] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
-
-  // Coordenadas actualizadas a Santo Domingo, Ecuador
   const [region, setRegion] = useState({
-    latitude: -0.253,
-    longitude: -79.1754,
+    latitude: 4.6097,
+    longitude: -74.0817,
     latitudeDelta: 0.0922,
     longitudeDelta: 0.0421,
   });
@@ -31,14 +29,9 @@ export default function MapScreen() {
     setLoading(true);
     try {
       const data = await getMyTerrains();
-
-      // CAMBIO DE SEGURIDAD: Validamos que la data sea un array
-      // Esto evita el error "Z.map is not a function"
-      const validatedData = Array.isArray(data) ? data : [];
-      setTerrains(validatedData);
-
-      if (validatedData.length > 0) {
-        const first = validatedData.find(
+      setTerrains(data);
+      if (data && data.length > 0) {
+        const first = data.find(
           (t: any) => t.coordenadas && t.coordenadas.coordinates,
         );
         if (first) {
@@ -52,7 +45,6 @@ export default function MapScreen() {
       }
     } catch (error) {
       console.error("Error loading terrains for map:", error);
-      setTerrains([]); // Si hay error, garantizamos que el estado sea un array vacío
     } finally {
       setLoading(false);
     }
@@ -119,8 +111,7 @@ export default function MapScreen() {
           </View>
         ) : (
           <MapComponent
-            // Seguridad extra: si terrains no es array, enviamos []
-            terrains={Array.isArray(terrains) ? terrains : []}
+            terrains={terrains}
             region={region}
             onRegionChange={setRegion}
           />
