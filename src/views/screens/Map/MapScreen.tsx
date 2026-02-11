@@ -1,15 +1,15 @@
-import React, { useCallback, useState } from "react";
-import { Keyboard, Platform, StyleSheet, View } from "react-native";
+import React, { useState, useCallback } from "react";
+import { View, StyleSheet, Platform, Keyboard } from "react-native";
 
-import { getMyTerrains } from "@/src/services/terrain.service";
-import { useFocusEffect } from "expo-router";
 import {
-    ActivityIndicator,
-    FAB,
-    Searchbar,
-    Text,
-    useTheme,
+  Text,
+  useTheme,
+  Searchbar,
+  ActivityIndicator,
+  FAB,
 } from "react-native-paper";
+import { useFocusEffect } from "expo-router";
+import { getMyTerrains } from "@/src/services/terrain.service";
 import MapComponent from "./MapComponent";
 
 export default function MapScreen() {
