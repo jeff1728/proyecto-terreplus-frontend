@@ -5,12 +5,18 @@ export const styles = StyleSheet.create({
         flex: 1,
         padding: 24,
         justifyContent: 'center',
+        // --- AJUSTES PARA WEB ---
+        alignSelf: 'center', 
+        width: '100%',       
+        maxWidth: 450,       
+        // -------------------------
     },
     title: {
         textAlign: 'center',
         marginBottom: 8,
         fontWeight: 'bold',
     },
+    // ... el resto de tus estilos se mantienen exactamente igual
     subtitle: {
         textAlign: 'center',
         marginBottom: 48,

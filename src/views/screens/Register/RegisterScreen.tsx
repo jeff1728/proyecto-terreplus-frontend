@@ -12,19 +12,33 @@ export default function RegisterScreen() {
     const [confirmPassword, setConfirmPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-    const [role, setRole] = useState('agricultor'); // Default valid role
+    const [role, setRole] = useState('agricultor');
 
     const router = useRouter();
     const theme = useTheme();
-
     const [loading, setLoading] = useState(false);
 
     const handleRegister = async () => {
+        // 1. Validación de campos vacíos
         if (!name || !email || !password || !confirmPassword) {
             alert('Por favor completa todos los campos');
             return;
         }
 
+        // 2. Validación de longitud (8-12 caracteres)
+        if (password.length < 8 || password.length > 12) {
+            alert('La contraseña debe tener entre 8 y 12 caracteres');
+            return;
+        }
+
+        // 3. Validación de carácter especial
+        const specialCharRegex = /[!@#$%^&*(),.?":{}|<>]/;
+        if (!specialCharRegex.test(password)) {
+            alert('La contraseña debe incluir al menos un carácter especial (ej: @, #, $, !)');
+            return;
+        }
+
+        // 4. Confirmación de contraseña
         if (password !== confirmPassword) {
             alert('Las contraseñas no coinciden');
             return;
@@ -34,7 +48,7 @@ export default function RegisterScreen() {
             setLoading(true);
             await authService.register(name, email, password, role);
             alert('¡Registro exitoso! Por favor inicia sesión.');
-            router.replace('/(auth)/login'); // Or router.back()
+            router.replace('/(auth)/login');
         } catch (error: any) {
             console.error('Register error:', error);
             const message = error.response?.data?.message || 'Error al registrarse';
@@ -45,7 +59,10 @@ export default function RegisterScreen() {
     };
 
     return (
-        <ScrollView contentContainerStyle={[styles.container, { backgroundColor: theme.colors.background }]}>
+        <ScrollView 
+            contentContainerStyle={[styles.container, { backgroundColor: theme.colors.background }]}
+            showsVerticalScrollIndicator={false}
+        >
             <Text variant="displayMedium" style={[styles.title, { color: theme.colors.primary }]}>
                 Crear Cuenta
             </Text>
@@ -78,6 +95,7 @@ export default function RegisterScreen() {
                     mode="outlined"
                     style={styles.input}
                 />
+                <Text style={styles.helperText}>* 8-12 caracteres y un símbolo especial</Text>
 
                 <TextInput
                     label="Confirmar Contraseña"
@@ -94,14 +112,8 @@ export default function RegisterScreen() {
                     value={role}
                     onValueChange={setRole}
                     buttons={[
-                        {
-                            value: 'agricultor',
-                            label: 'Agricultor',
-                        },
-                        {
-                            value: 'inversionista',
-                            label: 'Inversionista',
-                        },
+                        { value: 'agricultor', label: 'Agricultor' },
+                        { value: 'inversionista', label: 'Inversionista' },
                     ]}
                     style={{ marginBottom: 8 }}
                 />
