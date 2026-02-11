@@ -1,4 +1,4 @@
-import { View, Alert } from 'react-native';
+import { View, Alert, Platform } from 'react-native';
 import { Text, useTheme, List, Divider } from 'react-native-paper';
 import { router } from 'expo-router';
 import { storage } from '@/src/services/storage';
@@ -8,24 +8,33 @@ export default function SupportScreen() {
     const theme = useTheme();
 
     const handleLogout = () => {
-        Alert.alert(
-            "Cerrar Sesión",
-            "¿Estás seguro que deseas cerrar sesión?",
-            [
-                {
-                    text: "Cancelar",
-                    style: "cancel"
-                },
-                {
-                    text: "Confirmar",
-                    onPress: async () => {
-                        await storage.removeToken();
-                        router.replace('/login');
+        if (Platform.OS === 'web') {
+            const confirm = window.confirm("¿Estás seguro que deseas cerrar sesión?");
+            if (confirm) {
+                storage.removeToken().then(() => {
+                    router.replace('/login');
+                });
+            }
+        } else {
+            Alert.alert(
+                "Cerrar Sesión",
+                "¿Estás seguro que deseas cerrar sesión?",
+                [
+                    {
+                        text: "Cancelar",
+                        style: "cancel"
                     },
-                    style: "destructive"
-                }
-            ]
-        );
+                    {
+                        text: "Confirmar",
+                        onPress: async () => {
+                            await storage.removeToken();
+                            router.replace('/login');
+                        },
+                        style: "destructive"
+                    }
+                ]
+            );
+        }
     };
 
     return (
