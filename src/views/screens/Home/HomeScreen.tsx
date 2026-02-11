@@ -1,7 +1,7 @@
 import { MapModal } from '@/src/views/modals/map.modal';
 import React, { useState, useEffect } from 'react';
-import { ScrollView, View, Alert } from 'react-native';
-import { Avatar, Button, Card, Checkbox, Text, TextInput, useTheme, HelperText, Modal as PaperModal, Portal, List, Divider } from 'react-native-paper';
+import { ScrollView, View, Alert, TouchableOpacity } from 'react-native';
+import { Avatar, Button, Card, Checkbox, Text, TextInput, useTheme, HelperText, Modal as PaperModal, Portal, List, Divider, Menu } from 'react-native-paper';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { createTerrain, getMyTerrains } from '@/src/services/terrain.service';
 import { estimateTerrainPrice } from '@/src/services/ml.service';
@@ -321,17 +321,22 @@ export default function EstimationScreen() {
                 />
                 {errors.landSize && <HelperText type="error">{errors.landSize}</HelperText>}
 
-                <TextInput
-                    label="Tipo de Suelo (fertil, medio, pobre)"
-                    placeholder="fertil, medio, pobre"
-                    value={soilCondition}
-                    onChangeText={(v) => handleInputChange(setSoilCondition, v)}
-                    mode="outlined"
-                    // right={<TextInput.Icon icon="chevron-down" />}
-                    style={styles.input}
-                    error={!!errors.soilCondition}
-                />
-                {errors.soilCondition && <HelperText type="error">{errors.soilCondition}</HelperText>}
+                <List.Accordion
+                    title={soilCondition ? soilCondition.charAt(0).toUpperCase() + soilCondition.slice(1) : "Seleccione Tipo de Suelo"}
+                    left={props => <List.Icon {...props} icon="sprout" />}
+                    expanded={showSoilMenu}
+                    onPress={() => setShowSoilMenu(!showSoilMenu)}
+                    style={{ backgroundColor: theme.colors.elevation.level1, borderRadius: 4, marginBottom: 5, borderBottomWidth: 1, borderBottomColor: theme.colors.outline }}
+                    titleStyle={{ color: soilCondition ? theme.colors.onSurface : theme.colors.onSurfaceDisabled }}
+                >
+                    <List.Item title="Fértil" onPress={() => { handleInputChange(setSoilCondition, 'fertil'); setShowSoilMenu(false); }} />
+                    <List.Item title="Franco" onPress={() => { handleInputChange(setSoilCondition, 'franco'); setShowSoilMenu(false); }} />
+                    <List.Item title="Arcilloso" onPress={() => { handleInputChange(setSoilCondition, 'arcilloso'); setShowSoilMenu(false); }} />
+                    <List.Item title="Arenoso" onPress={() => { handleInputChange(setSoilCondition, 'arenoso'); setShowSoilMenu(false); }} />
+                    <List.Item title="Limoso" onPress={() => { handleInputChange(setSoilCondition, 'limoso'); setShowSoilMenu(false); }} />
+                    <List.Item title="Andisol (Volcánico)" onPress={() => { handleInputChange(setSoilCondition, 'andisol'); setShowSoilMenu(false); }} />
+                    <List.Item title="Orgánico" onPress={() => { handleInputChange(setSoilCondition, 'organico'); setShowSoilMenu(false); }} />
+                </List.Accordion>
 
                 <View style={styles.checkboxContainer}>
                     <Checkbox
